@@ -1,89 +1,173 @@
-// 1. Inisialisasi Chart.js
-const ctx = document.getElementById('liveChart').getContext('2d');
-const liveChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: [],
-        datasets: [{
-            label: 'Aliran Napas (L/min)',
-            data: [],
-            borderColor: '#2dd4bf',
-            backgroundColor: 'rgba(45, 212, 191, 0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.3
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-            y: { min: 0, max: 1000, ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
-        },
-        plugins: { legend: { labels: { color: '#f8fafc' } } }
-    }
-});
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Spirometry Dashboard - NaFiTech</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-6">
 
-// 2. Fungsi Update Badge Zona & Angka Laju Aliran
-function updateZoneBadge(status, pressure) {
-    const badge = document.getElementById('zone-badge');
-    document.getElementById('pressure-value').innerText = pressure;
+    <!-- Header / Navbar -->
+    <header class="flex justify-between items-center bg-slate-800 p-5 rounded-xl border border-slate-700 mb-6 shadow-lg">
+        <div>
+            <h1 class="text-2xl font-bold text-teal-400">Smart Spirometry Dashboard</h1>
+            <p class="text-xs text-slate-400">Tim NaFiTech | Universitas Amikom Purwokerto</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span class="text-sm text-slate-300">Status Alat:</span>
+            <span id="connection-status" class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                ● Online (Connected)
+            </span>
+        </div>
+    </header>
 
-    if (status === 'Zona Merah' || pressure < 500) {
-        badge.className = "w-full text-center py-3 rounded-lg font-bold text-lg bg-red-500/20 text-red-400 border border-red-500/40 shadow-red-500/10";
-        badge.innerText = "🔴 ZONA MERAH (Rendah)";
-    } else if (status === 'Zona Kuning' || (pressure >= 500 && pressure < 800)) {
-        badge.className = "w-full text-center py-3 rounded-lg font-bold text-lg bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 shadow-yellow-500/10";
-        badge.innerText = "🟡 ZONA KUNING (Sedang)";
-    } else {
-        badge.className = "w-full text-center py-3 rounded-lg font-bold text-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-emerald-500/10";
-        badge.innerText = "🟢 ZONA HIJAU (Normal)";
-    }
-}
+    <!-- Main Grid Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-// 3. Ambil Riwayat dari Backend API secara Berkala (Polling)
-async function fetchLatestData() {
-    try {
-        const res = await fetch('/api/history');
-        const data = await res.json();
-        const tbody = document.getElementById('history-table-body');
-        tbody.innerHTML = '';
-        
-        data.forEach(item => {
-            const row = document.createElement('tr');
-            const dateFormatted = new Date(item.created_at).toLocaleString('id-ID');
-            row.innerHTML = `
-                <td class="py-3 px-4">${dateFormatted}</td>
-                <td class="py-3 px-4">${item.device_id}</td>
-                <td class="py-3 px-4 font-semibold">${item.pressure} L/min</td>
-                <td class="py-3 px-4"><span class="px-2 py-1 rounded text-xs font-semibold ${item.zone_status === 'Zona Merah' ? 'bg-red-500/20 text-red-400' : item.zone_status === 'Zona Kuning' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-emerald-500/20 text-emerald-400'}">${item.zone_status}</span></td>
-            `;
-            tbody.appendChild(row);
+        <!-- Card Left: Gauge Meter & Current Zone -->
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 flex flex-col items-center justify-between">
+            <h2 class="text-lg font-semibold text-slate-200 mb-4 w-full border-b border-slate-700 pb-2">Hasil Laju Aliran Napas</h2>
+            
+            <div class="text-center my-4">
+                <div id="pressure-value" class="text-6xl font-extrabold text-white tracking-tight">0</div>
+                <div class="text-sm font-medium text-slate-400 mt-1">L/min (Laju Aliran)</div>
+            </div>
+
+            <!-- Indicator Box Zona (Merah / Kuning / Hijau) -->
+            <div id="zone-badge" class="w-full text-center py-3 rounded-lg font-bold text-lg bg-slate-700 text-slate-300 transition-all duration-300 shadow-inner">
+                Belum Ada Data
+            </div>
+
+            <div class="w-full mt-6 text-xs text-slate-400 border-t border-slate-700 pt-3">
+                <div class="flex justify-between my-1"><span>🔴 Zona Merah:</span> <span>&lt; 500 L/min</span></div>
+                <div class="flex justify-between my-1"><span>🟡 Zona Kuning:</span> <span>500 - 800 L/min</span></div>
+                <div class="flex justify-between my-1"><span>🟢 Zona Hijau:</span> <span>&gt; 800 L/min</span></div>
+            </div>
+        </div>
+
+        <!-- Card Right: Live Real-Time Flow Chart -->
+        <div class="lg:col-span-2 bg-slate-800 p-6 rounded-xl border border-slate-700 flex flex-col justify-between">
+            <h2 class="text-lg font-semibold text-slate-200 mb-4 border-b border-slate-700 pb-2">Grafik Hembusan Napas Real-Time</h2>
+            <div class="relative h-64 w-full">
+                <canvas id="liveChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Table Section: History Logs -->
+    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 mt-6 shadow-lg">
+        <h2 class="text-lg font-semibold text-slate-200 mb-4 border-b border-slate-700 pb-2">Riwayat Pengujian Terakhir</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-300">
+                <thead class="bg-slate-700/50 text-slate-400 uppercase text-xs">
+                    <tr>
+                        <th class="py-3 px-4">Waktu</th>
+                        <th class="py-3 px-4">ID Perangkat</th>
+                        <th class="py-3 px-4">Laju Aliran (L/min)</th>
+                        <th class="py-3 px-4">Status Zona</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table-body" class="divide-y divide-slate-700">
+                    <!-- Data dari database akan dimasukkan otomatis di sini -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Logic Javascript Polling Vercel -->
+    <script>
+        // 1. Inisialisasi Chart.js
+        const ctx = document.getElementById('liveChart').getContext('2d');
+        const liveChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Aliran Napas (L/min)',
+                    data: [],
+                    borderColor: '#2dd4bf',
+                    backgroundColor: 'rgba(45, 212, 191, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                    y: { min: 0, max: 1000, ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                },
+                plugins: { legend: { labels: { color: '#f8fafc' } } }
+            }
         });
 
-        // Jika terdapat data terbaru dari database Aiven
-        if (data.length > 0) {
-            const latest = data[0];
-            updateZoneBadge(latest.zone_status, latest.pressure);
+        // 2. Fungsi Update Indicator Zone Badge
+        function updateZoneBadge(status, pressure) {
+            const badge = document.getElementById('zone-badge');
+            document.getElementById('pressure-value').innerText = pressure;
 
-            // Update Grafik secara Otomatis
-            const timeLabel = new Date(latest.created_at).toLocaleTimeString('id-ID');
-            if (!liveChart.data.labels.includes(timeLabel)) {
-                if (liveChart.data.labels.length > 15) {
-                    liveChart.data.labels.shift();
-                    liveChart.data.datasets[0].data.shift();
-                }
-                liveChart.data.labels.push(timeLabel);
-                liveChart.data.datasets[0].data.push(latest.pressure);
-                liveChart.update();
+            if (status === 'Zona Merah' || pressure < 500) {
+                badge.className = "w-full text-center py-3 rounded-lg font-bold text-lg bg-red-500/20 text-red-400 border border-red-500/40 shadow-red-500/10";
+                badge.innerText = "🔴 ZONA MERAH (Rendah)";
+            } else if (status === 'Zona Kuning' || (pressure >= 500 && pressure < 800)) {
+                badge.className = "w-full text-center py-3 rounded-lg font-bold text-lg bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 shadow-yellow-500/10";
+                badge.innerText = "🟡 ZONA KUNING (Sedang)";
+            } else {
+                badge.className = "w-full text-center py-3 rounded-lg font-bold text-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-emerald-500/10";
+                badge.innerText = "🟢 ZONA HIJAU (Normal)";
             }
         }
-    } catch (err) {
-        console.error("Gagal mengambil data terbaru:", err);
-    }
-}
 
-// Jalankan fetch pertama kali dan ulangi setiap 2 detik (2000 ms)
-fetchLatestData();
-setInterval(fetchLatestData, 2000);
+        // 3. Mengambil Data Riwayat dari Backend Vercel secara Berkala (Polling 2 Detik)
+        async function fetchLatestData() {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                const tbody = document.getElementById('history-table-body');
+                tbody.innerHTML = '';
+                
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    const dateFormatted = new Date(item.created_at).toLocaleString('id-ID');
+                    row.innerHTML = `
+                        <td class="py-3 px-4">${dateFormatted}</td>
+                        <td class="py-3 px-4">${item.device_id}</td>
+                        <td class="py-3 px-4 font-semibold">${item.pressure} L/min</td>
+                        <td class="py-3 px-4"><span class="px-2 py-1 rounded text-xs font-semibold ${item.zone_status === 'Zona Merah' ? 'bg-red-500/20 text-red-400' : item.zone_status === 'Zona Kuning' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-emerald-500/20 text-emerald-400'}">${item.zone_status}</span></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                if (data.length > 0) {
+                    const latest = data[0];
+                    updateZoneBadge(latest.zone_status, latest.pressure);
+
+                    const timeLabel = new Date(latest.created_at).toLocaleTimeString('id-ID');
+                    if (!liveChart.data.labels.includes(timeLabel)) {
+                        if (liveChart.data.labels.length > 15) {
+                            liveChart.data.labels.shift();
+                            liveChart.data.datasets[0].data.shift();
+                        }
+                        liveChart.data.labels.push(timeLabel);
+                        liveChart.data.datasets[0].data.push(latest.pressure);
+                        liveChart.update();
+                    }
+                }
+            } catch (err) {
+                console.error("Gagal mengambil data:", err);
+            }
+        }
+
+        // Jalankan fetch awal dan atur perulangan setiap 2 detik
+        fetchLatestData();
+        setInterval(fetchLatestData, 2000);
+    </script>
+</body>
+</html>
