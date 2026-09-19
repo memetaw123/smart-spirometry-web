@@ -15,7 +15,7 @@ app.use(express.json());
 // Mengarahkan folder public agar file index.html terbaca
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Koneksi Database (Support Local XAMPP & Cloud Aiven)
+// Koneksi Database (Mendukung Local XAMPP & Cloud Aiven)
 const db = mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
@@ -30,7 +30,7 @@ db.connect((err) => {
         console.error('❌ Gagal konek ke database:', err.message);
     } else {
         console.log('✅ Konek ke MySQL berhasil!');
-        createTablesAutomatically(); // Otomatis buat tabel jika belum ada
+        createTablesAutomatically(); // Otomatis buat tabel jika belum ada di Aiven
     }
 });
 
@@ -74,13 +74,13 @@ app.post('/api/data', (req, res) => {
     db.query(query, [device_id || 'SPIRO-01', pressure, status], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         
-        // Memancarkan data real-time ke web dashboard via Socket.io
+        // Memancarkan event via Socket.io
         io.emit('newData', { pressure, status, created_at: new Date() });
         res.json({ message: 'Data sukses disimpan!' });
     });
 });
 
-// Endpoint Mengambil Riwayat Tes
+// Endpoint Mengambil Riwayat Tes untuk Web Dashboard
 app.get('/api/history', (req, res) => {
     const query = 'SELECT * FROM test_logs ORDER BY created_at DESC LIMIT 10';
     db.query(query, (err, results) => {
@@ -89,7 +89,7 @@ app.get('/api/history', (req, res) => {
     });
 });
 
-// Fallback Route (Kompatibel dengan Express v5 / path-to-regexp v8)
+// Fallback Route (Kompatibel dengan Express v5 & Vercel)
 app.get('/*path', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
