@@ -11,13 +11,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Menggunakan createPool agar koneksi dikelola otomatis di serverless Vercel
+// Konfigurasi Pool untuk Aiven MySQL Cloud
 const db = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'smart_spirometry',
-    port: process.env.DB_PORT || 3306,
+    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
     ssl: process.env.DB_HOST ? { rejectUnauthorized: false } : false,
     waitForConnections: true,
     connectionLimit: 10,
@@ -56,7 +56,6 @@ function createTablesAutomatically() {
     });
 }
 
-// Panggil pembuatan tabel di awal
 createTablesAutomatically();
 
 // Endpoint Menerima Data dari ESP8266 (HTTP POST)
@@ -64,7 +63,7 @@ app.post('/api/data', (req, res) => {
     const { device_id, pressure, status } = req.body;
     const query = 'INSERT INTO test_logs (patient_id, device_id, pressure, zone_status) VALUES (1, ?, ?, ?)';
     
-    db.query(query, [device_id || 'SPIRO-01', pressure, status], (err, result) => {
+    db.query(query, [device_id || 'SPIRO-01', pressure || 0, status || 'Zona Merah'], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ message: 'Data sukses disimpan!' });
     });
