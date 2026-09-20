@@ -14,11 +14,17 @@
             <h1 class="text-2xl font-bold text-teal-400">Smart Spirometry Dashboard</h1>
             <p class="text-xs text-slate-400">Tim NaFiTech | Universitas Amikom Purwokerto</p>
         </div>
-        <div class="flex items-center space-x-3">
-            <span class="text-sm text-slate-300">Status Sistem:</span>
-            <span id="connection-status" class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                ● Online
-            </span>
+        <div class="flex items-center space-x-4">
+            <!-- Tombol Reset History & Dashboard -->
+            <button onclick="resetDashboardHistory()" class="px-4 py-2 text-xs font-bold rounded-lg bg-red-600 hover:bg-red-500 text-white transition-all shadow-md flex items-center gap-2">
+                🔄 Reset History
+            </button>
+            <div class="flex items-center space-x-2">
+                <span class="text-sm text-slate-300">Status Sistem:</span>
+                <span id="connection-status" class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    ● Online
+                </span>
+            </div>
         </div>
     </header>
 
@@ -147,7 +153,37 @@
             }
         }
 
-        // Ambil data setiap 2 detik (Polling)
+        // Fungsi Reset History dan Tampilan Grafik
+        async function resetDashboardHistory() {
+            if (confirm("Apakah kamu yakin ingin mengosongkan semua riwayat tes?")) {
+                try {
+                    const res = await fetch('/api/reset', { method: 'DELETE' });
+                    const result = await res.json();
+                    
+                    if (res.ok) {
+                        // Reset Tampilan UI ke 0
+                        document.getElementById('pressure-value').innerText = '0';
+                        const badge = document.getElementById('zone-badge');
+                        badge.className = "w-full text-center py-3 rounded-lg font-bold text-lg bg-slate-700 text-slate-300 transition-all duration-300 shadow-inner";
+                        badge.innerText = "Belum Ada Data";
+
+                        // Kosongkan Grafik
+                        liveChart.data.labels = [];
+                        liveChart.data.datasets[0].data = [];
+                        liveChart.update();
+
+                        // Kosongkan Tabel
+                        document.getElementById('history-table-body').innerHTML = '';
+                        alert("Riwayat berhasil dikosongkan!");
+                    } else {
+                        alert("Gagal menghapus data: " + result.error);
+                    }
+                } catch (err) {
+                    alert("Gagal terhubung ke server untuk menghapus data.");
+                }
+            }
+        }
+
         fetchLatestData();
         setInterval(fetchLatestData, 2000);
     </script>
