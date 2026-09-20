@@ -9,9 +9,11 @@ const server = http.createServer(app);
 
 app.use(cors());
 app.use(express.json());
+
+// Mengarahkan folder public agar file index.html terbaca
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Menggunakan createPool agar koneksi otomatis dikelola di Serverless Vercel
+// Menggunakan createPool agar koneksi otomatis dibuka kembali di Vercel
 const db = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
@@ -24,7 +26,7 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
-// Otomatisasi Pembuatan Tabel Database Aiven Cloud
+// Pembuatan tabel otomatis jika belum ada di database Aiven
 function createTablesAutomatically() {
     const createPatients = `
         CREATE TABLE IF NOT EXISTS patients (
@@ -60,10 +62,14 @@ createTablesAutomatically();
 
 // Endpoint Menerima Data dari ESP8266 (HTTP POST)
 app.post('/api/data', (req, res) => {
-    const { device_id, pressure, status } = req.body;
-    const query = 'INSERT INTO test_logs (patient_id, device_id, pressure, zone_status) VALUES (1, ?, ?, ?)';
+    const { device_id, pressure, status, patient_id } = req.body;
     
-    db.query(query, [device_id || 'SPIRO-01', pressure || 0, status || 'Zona Merah'], (err, result) => {
+    // Default patient_id = 1 (Dafanda) jika tidak dikirim oleh alat
+    const targetPatientId = patient_id ? parseInt(patient_id) : 1;
+
+    const query = 'INSERT INTO test_logs (patient_id, device_id, pressure, zone_status) VALUES (?, ?, ?, ?)';
+    
+    db.query(query, [targetPatientId, device_id || 'SPIRO-01', pressure || 0, status || 'Zona Merah'], (err, result) => {
         if (err) {
             console.error("Database Insert Error:", err);
             return res.status(500).json({ error: err.message });
@@ -72,10 +78,44 @@ app.post('/api/data', (req, res) => {
     });
 });
 
+// =========================================================
+// ENDPOINT BARU: RESET / MENGOSONGKAN RIWAYAT TES (DELETE)
+// =========================================================
+app.delete('/api/reset', (req, res) => {
+    // Parameter opsional patient_id via query URL (misal: /api/reset?patient_id=1)
+    const { patient_id } = req.query;
+
+    let query = 'TRUNCATE TABLE test_logs';
+    let queryParams = [];
+
+    // Jika parameter patient_id dikirim, hanya hapus riwayat pasien tersebut
+    if (patient_id) {
+        query = 'DELETE FROM test_logs WHERE patient_id = ?';
+        queryParams = [patient_id];
+    }
+
+    db.query(query, queryParams, (err, result) => {
+        if (err) {
+            console.error("Error Reset Database:", err);
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ message: 'Riwayat data berhasil dikosongkan!' });
+    });
+});
+
 // Endpoint Mengambil Riwayat Tes untuk Web Dashboard (HTTP GET)
 app.get('/api/history', (req, res) => {
-    const query = 'SELECT * FROM test_logs ORDER BY created_at DESC LIMIT 10';
-    db.query(query, (err, results) => {
+    const { patient_id } = req.query;
+    let query = 'SELECT * FROM test_logs ORDER BY created_at DESC LIMIT 10';
+    let queryParams = [];
+
+    // Filter berdasarkan pasien jika dipanggil dengan /api/history?patient_id=X
+    if (patient_id) {
+        query = 'SELECT * FROM test_logs WHERE patient_id = ? ORDER BY created_at DESC LIMIT 10';
+        queryParams = [patient_id];
+    }
+
+    db.query(query, queryParams, (err, results) => {
         if (err) {
             console.error("Database Fetch Error:", err);
             return res.status(500).json({ error: err.message });
