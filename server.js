@@ -10,10 +10,10 @@ const server = http.createServer(app);
 app.use(cors());
 app.use(express.json());
 
-// Mengarahkan folder public agar file index.html dapat dibaca
+// Mengarahkan folder public agar file index.html terbaca
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Menggunakan createPool agar koneksi dikelola secara otomatis di serverless Vercel
+// Menggunakan createPool agar koneksi dikelola otomatis di serverless Vercel
 const db = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
@@ -58,7 +58,6 @@ function createTablesAutomatically() {
     });
 }
 
-// Inisialisasi Tabel
 createTablesAutomatically();
 
 // Endpoint Menerima Data dari ESP8266 (HTTP POST)
@@ -87,7 +86,7 @@ app.get('/api/history', (req, res) => {
     });
 });
 
-// Fallback Route (Menggunakan wildcard yang valid)
+// Fallback Route
 app.get('/*path', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
