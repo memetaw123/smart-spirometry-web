@@ -9,11 +9,9 @@ const server = http.createServer(app);
 
 app.use(cors());
 app.use(express.json());
-
-// Mengarahkan folder public agar file index.html terbaca
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Menggunakan createPool agar koneksi dikelola otomatis di serverless Vercel
+// Menggunakan createPool agar koneksi otomatis dibuka kembali di Vercel
 const db = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
@@ -26,7 +24,7 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
-// Otomatisasi Pembuatan Tabel Database Aiven Cloud
+// Otomatisasi pembuatan tabel jika belum ada
 function createTablesAutomatically() {
     const createPatients = `
         CREATE TABLE IF NOT EXISTS patients (
@@ -66,10 +64,7 @@ app.post('/api/data', (req, res) => {
     const query = 'INSERT INTO test_logs (patient_id, device_id, pressure, zone_status) VALUES (1, ?, ?, ?)';
     
     db.query(query, [device_id || 'SPIRO-01', pressure || 0, status || 'Zona Merah'], (err, result) => {
-        if (err) {
-            console.error("Database Insert Error:", err);
-            return res.status(500).json({ error: err.message });
-        }
+        if (err) return res.status(500).json({ error: err.message });
         res.json({ message: 'Data sukses disimpan!' });
     });
 });
@@ -78,10 +73,7 @@ app.post('/api/data', (req, res) => {
 app.get('/api/history', (req, res) => {
     const query = 'SELECT * FROM test_logs ORDER BY created_at DESC LIMIT 10';
     db.query(query, (err, results) => {
-        if (err) {
-            console.error("Database Fetch Error:", err);
-            return res.status(500).json({ error: err.message });
-        }
+        if (err) return res.status(500).json({ error: err.message });
         res.json(results);
     });
 });
@@ -91,7 +83,6 @@ app.get('/*path', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Jalankan Server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`🚀 Server berjalan di port ${PORT}`);
