@@ -4,20 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Spirometry Dashboard - NaFiTech</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-6">
 
+    <!-- Header / Navbar -->
     <header class="flex justify-between items-center bg-slate-800 p-5 rounded-xl border border-slate-700 mb-6 shadow-lg">
         <div>
             <h1 class="text-2xl font-bold text-teal-400">Smart Spirometry Dashboard</h1>
             <p class="text-xs text-slate-400">Tim NaFiTech | Universitas Amikom Purwokerto</p>
         </div>
         <div class="flex items-center space-x-4">
-            <!-- Tombol Reset History & Dashboard -->
+            <!-- Tombol Reset Data -->
             <button onclick="resetDashboardHistory()" class="px-4 py-2 text-xs font-bold rounded-lg bg-red-600 hover:bg-red-500 text-white transition-all shadow-md flex items-center gap-2">
-                🔄 Reset History
+                🔄 Reset Data
             </button>
             <div class="flex items-center space-x-2">
                 <span class="text-sm text-slate-300">Status Sistem:</span>
@@ -28,16 +31,23 @@
         </div>
     </header>
 
+    <!-- Main Grid Content -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Card Left: Gauge Meter & Current Zone -->
         <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 flex flex-col items-center justify-between">
             <h2 class="text-lg font-semibold text-slate-200 mb-4 w-full border-b border-slate-700 pb-2">Hasil Laju Aliran Napas</h2>
+            
             <div class="text-center my-4">
                 <div id="pressure-value" class="text-6xl font-extrabold text-white tracking-tight">0</div>
                 <div class="text-sm font-medium text-slate-400 mt-1">L/min (Laju Aliran)</div>
             </div>
+
+            <!-- Indicator Box Zona (Merah / Kuning / Hijau) -->
             <div id="zone-badge" class="w-full text-center py-3 rounded-lg font-bold text-lg bg-slate-700 text-slate-300 transition-all duration-300 shadow-inner">
                 Belum Ada Data
             </div>
+
             <div class="w-full mt-6 text-xs text-slate-400 border-t border-slate-700 pt-3">
                 <div class="flex justify-between my-1"><span>🔴 Zona Merah:</span> <span>&lt; 500 L/min</span></div>
                 <div class="flex justify-between my-1"><span>🟡 Zona Kuning:</span> <span>500 - 800 L/min</span></div>
@@ -45,14 +55,17 @@
             </div>
         </div>
 
+        <!-- Card Right: Live Real-Time Flow Chart -->
         <div class="lg:col-span-2 bg-slate-800 p-6 rounded-xl border border-slate-700 flex flex-col justify-between">
             <h2 class="text-lg font-semibold text-slate-200 mb-4 border-b border-slate-700 pb-2">Grafik Hembusan Napas Real-Time</h2>
             <div class="relative h-64 w-full">
                 <canvas id="liveChart"></canvas>
             </div>
         </div>
+
     </div>
 
+    <!-- Table Section: History Logs -->
     <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 mt-6 shadow-lg">
         <h2 class="text-lg font-semibold text-slate-200 mb-4 border-b border-slate-700 pb-2">Riwayat Pengujian Terakhir</h2>
         <div class="overflow-x-auto">
@@ -66,12 +79,15 @@
                     </tr>
                 </thead>
                 <tbody id="history-table-body" class="divide-y divide-slate-700">
+                    <!-- Data dari database dimasukkan otomatis di sini -->
                 </tbody>
             </table>
         </div>
     </div>
 
+    <!-- Logic Javascript -->
     <script>
+        // 1. Inisialisasi Chart.js
         const ctx = document.getElementById('liveChart').getContext('2d');
         const liveChart = new Chart(ctx, {
             type: 'line',
@@ -98,6 +114,7 @@
             }
         });
 
+        // 2. Fungsi Update Indicator Zone Badge
         function updateZoneBadge(status, pressure) {
             const badge = document.getElementById('zone-badge');
             document.getElementById('pressure-value').innerText = pressure;
@@ -114,6 +131,7 @@
             }
         }
 
+        // 3. Mengambil Data Riwayat dari Backend Vercel secara Berkala (Polling 2 Detik)
         async function fetchLatestData() {
             try {
                 const res = await fetch('/api/history');
@@ -149,32 +167,35 @@
                     }
                 }
             } catch (err) {
-                console.error("Gagal mengambil data terbaru:", err);
+                console.error("Gagal mengambil data:", err);
             }
         }
 
-        // Fungsi Reset History dan Tampilan Grafik
+        // 4. Fungsi Reset Dashboard dan Mengosongkan Database
         async function resetDashboardHistory() {
-            if (confirm("Apakah kamu yakin ingin mengosongkan semua riwayat tes?")) {
+            if (confirm("Apakah Anda yakin ingin mengosongkan semua riwayat tes?")) {
                 try {
                     const res = await fetch('/api/reset', { method: 'DELETE' });
                     const result = await res.json();
                     
                     if (res.ok) {
-                        // Reset Tampilan UI ke 0
+                        // Reset Angka Indikator Laju Aliran ke 0
                         document.getElementById('pressure-value').innerText = '0';
+                        
+                        // Reset Badge Zona
                         const badge = document.getElementById('zone-badge');
                         badge.className = "w-full text-center py-3 rounded-lg font-bold text-lg bg-slate-700 text-slate-300 transition-all duration-300 shadow-inner";
                         badge.innerText = "Belum Ada Data";
 
-                        // Kosongkan Grafik
+                        // Kosongkan Data Grafik Line Chart
                         liveChart.data.labels = [];
                         liveChart.data.datasets[0].data = [];
                         liveChart.update();
 
-                        // Kosongkan Tabel
+                        // Bersihkan Tabel Riwayat
                         document.getElementById('history-table-body').innerHTML = '';
-                        alert("Riwayat berhasil dikosongkan!");
+
+                        alert("Riwayat pengujian berhasil dikosongkan!");
                     } else {
                         alert("Gagal menghapus data: " + result.error);
                     }
@@ -184,6 +205,7 @@
             }
         }
 
+        // Jalankan fetch awal dan atur perulangan setiap 2 detik
         fetchLatestData();
         setInterval(fetchLatestData, 2000);
     </script>
