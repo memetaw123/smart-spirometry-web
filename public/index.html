@@ -20,8 +20,7 @@
     <!-- MODAL FORM PASIEN -->
     <div id="patient-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm">
         <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-11/12 max-w-md shadow-2xl transition-all">
-            <h2 class="text-xl font-bold text-cyan-400 mb-4 border-b border-slate-700 pb-2">Data Pasien Baru</h2>
-            <p class="text-xs text-slate-400 mb-4">Masukkan data pasien untuk memulai sesi pengujian baru.</p>
+            <h2 class="text-xl font-bold text-cyan-400 mb-4 border-b border-slate-700 pb-2">Data Pasien Sesi Baru</h2>
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1">Usia (Tahun)</label>
@@ -43,7 +42,7 @@
                     </select>
                 </div>
                 <button onclick="simpanProfilPasien()" class="w-full mt-4 bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-cyan-500/30">
-                    Mulai Sesi
+                    Mulai Sesi Uji
                 </button>
             </div>
         </div>
@@ -63,10 +62,10 @@
                     👤 Edit Pasien
                 </button>
                 <button onclick="resetData()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/30 hover:bg-rose-500/20 transition-all">
-                    🔄 Reset Data
+                    🔄 Reset Log Sesi
                 </button>
                 <button onclick="akhiriSesi()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-all shadow-md">
-                    🚪 Akhiri Sesi
+                    🚪 Akhiri Sesi & Simpan
                 </button>
             </div>
         </header>
@@ -116,9 +115,9 @@
             </div>
         </div>
 
-        <!-- Tabel Riwayat -->
+        <!-- Tabel Riwayat (Dengan Kolom Profil Tambahan) -->
         <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-xl w-full">
-            <h3 class="text-sm font-semibold text-slate-300 mb-4">Riwayat Pengujian Terakhir (Sesi Ini)</h3>
+            <h3 class="text-sm font-semibold text-slate-300 mb-4">Riwayat Pengujian Sesi Ini</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs text-slate-300">
                     <thead class="bg-slate-800/60 text-slate-400 uppercase border-b border-slate-700/50">
@@ -288,8 +287,9 @@
             }
         }
 
+        // FUNGSI BARU: Mengakhiri Sesi & Menyimpan Permanen
         async function akhiriSesi() {
-            if (confirm("Akhiri sesi saat ini? Data terbaik pasien akan disimpan ke Database Aiven, kemudian riwayat akan direset.")) {
+            if (confirm("Akhiri sesi saat ini? Data tiupan tertinggi pasien akan disimpan permanen ke database, kemudian riwayat akan dikosongkan.")) {
                 try {
                     const payload = {
                         usia: profilAktif.usia,
@@ -305,13 +305,16 @@
                     });
 
                     if (res.ok) {
+                        // Reset variabel frontend
                         profilAktif = { isSet: false, usia: 0, tb: 0, bb: 0, gender: '', targetNormal: 0 };
                         
+                        // Reset input modal
                         document.getElementById('input-usia').value = '';
                         document.getElementById('input-tb').value = '';
                         document.getElementById('input-bb').value = '';
                         document.getElementById('input-gender').value = 'Pria';
 
+                        // Reset layar dashboard
                         document.getElementById('pressure-value').innerText = '0';
                         document.getElementById('medical-prediction').classList.add('hidden');
                         document.getElementById('patient-info-display').innerHTML = 'Memulai sesi baru...';
@@ -325,7 +328,7 @@
                         liveChart.data.datasets[0].data = []; 
                         liveChart.update();
 
-                        alert("Sesi berhasil disimpan secara permanen di Database Aiven!");
+                        alert("Sesi pasien berhasil disimpan!");
                         bukaModal();
                     }
                 } catch (e) { alert("Error saat mengakhiri sesi"); }
