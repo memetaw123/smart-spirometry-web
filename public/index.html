@@ -61,9 +61,7 @@
                 <button onclick="bukaModal()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all">
                     👤 Edit Pasien
                 </button>
-                <button onclick="resetData()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/30 hover:bg-rose-500/20 transition-all">
-                    🔄 Reset Log Sesi
-                </button>
+                <!-- Tombol Reset Dihilangkan, Cukup Akhiri Sesi -->
                 <button onclick="akhiriSesi()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-all shadow-md">
                     🚪 Akhiri Sesi & Simpan
                 </button>
@@ -115,7 +113,7 @@
             </div>
         </div>
 
-        <!-- Tabel Riwayat (Dengan Kolom Profil Tambahan) -->
+        <!-- Tabel Riwayat -->
         <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-xl w-full">
             <h3 class="text-sm font-semibold text-slate-300 mb-4">Riwayat Pengujian Sesi Ini</h3>
             <div class="overflow-x-auto">
@@ -274,20 +272,7 @@
             } catch (err) { console.error(err); }
         }
 
-        async function resetData() {
-            if (confirm("Hapus riwayat pengujian untuk sesi saat ini?")) {
-                try {
-                    const res = await fetch('/api/reset', { method: 'DELETE' });
-                    if (res.ok) {
-                        document.getElementById('pressure-value').innerText = '0';
-                        document.getElementById('history-table-body').innerHTML = '';
-                        liveChart.data.labels = []; liveChart.data.datasets[0].data = []; liveChart.update();
-                    }
-                } catch (e) { alert("Error reset data"); }
-            }
-        }
-
-        // FUNGSI BARU: Mengakhiri Sesi & Menyimpan Permanen
+        // FUNGSI SATU PINTU: Mengakhiri Sesi, Menyimpan, dan Mereset
         async function akhiriSesi() {
             if (confirm("Akhiri sesi saat ini? Data tiupan tertinggi pasien akan disimpan permanen ke database, kemudian riwayat akan dikosongkan.")) {
                 try {
@@ -305,36 +290,43 @@
                     });
 
                     if (res.ok) {
-                        // Reset variabel frontend
+                        // Reset Variabel Frontend
                         profilAktif = { isSet: false, usia: 0, tb: 0, bb: 0, gender: '', targetNormal: 0 };
                         
-                        // Reset input modal
+                        // Kosongkan Modal Form
                         document.getElementById('input-usia').value = '';
                         document.getElementById('input-tb').value = '';
                         document.getElementById('input-bb').value = '';
                         document.getElementById('input-gender').value = 'Pria';
 
-                        // Reset layar dashboard
+                        // Kosongkan Tampilan Layar Utama
                         document.getElementById('pressure-value').innerText = '0';
                         document.getElementById('medical-prediction').classList.add('hidden');
                         document.getElementById('patient-info-display').innerHTML = 'Memulai sesi baru...';
                         document.getElementById('history-table-body').innerHTML = '';
                         
+                        // Reset Badge Zona
                         const badge = document.getElementById('zone-badge');
                         badge.className = "w-full text-center py-3.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-400 border border-slate-700 transition-all duration-300";
                         badge.innerText = "Menunggu Data...";
                         
+                        // Reset Grafik
                         liveChart.data.labels = []; 
                         liveChart.data.datasets[0].data = []; 
                         liveChart.update();
 
-                        alert("Sesi pasien berhasil disimpan!");
+                        alert("Sesi pasien berhasil disimpan dan layar telah direset!");
                         bukaModal();
+                    } else {
+                        alert("Gagal menyimpan sesi. Pastikan server backend berjalan.");
                     }
-                } catch (e) { alert("Error saat mengakhiri sesi"); }
+                } catch (e) { 
+                    alert("Error saat mengakhiri sesi. Periksa koneksi."); 
+                }
             }
         }
 
+        // Jalankan fetch polling setiap 2 detik[cite: 1, 2, 4]
         setInterval(fetchLatestData, 2000);
     </script>
 </body>
