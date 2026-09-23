@@ -165,7 +165,6 @@
         function bukaModal() { modal.classList.add('modal-active'); }
         function tutupModal() { modal.classList.remove('modal-active'); }
         
-        // Munculkan modal otomatis saat halaman pertama dibuka
         window.onload = () => { bukaModal(); };
 
         function simpanProfilPasien() {
@@ -181,7 +180,6 @@
 
             profilAktif = { usia, tb, bb, gender, isSet: true };
 
-            // Kalkulasi Rumus Knudson Prediksi Normal
             let prediksi = (gender === "Pria") 
                 ? (0.06 * tb) - (0.022 * usia) - 4.21 
                 : (0.052 * tb) - (0.022 * usia) - 3.87;
@@ -202,7 +200,6 @@
             tutupModal();
         }
 
-        // 1. Inisialisasi Chart.js
         const ctx = document.getElementById('liveChart').getContext('2d');
         const liveChart = new Chart(ctx, {
             type: 'line',
@@ -231,7 +228,6 @@
             }
         });
 
-        // 2. Fungsi Update Badge Zona & Persentase Capaian
         function updateUI(status, pressure) {
             document.getElementById('pressure-value').innerText = pressure;
             const badge = document.getElementById('zone-badge');
@@ -255,7 +251,6 @@
             }
         }
 
-        // 3. Ambil Riwayat dari Backend API secara Berkala (Polling 2 Detik)
         async function fetchLatestData() {
             try {
                 const res = await fetch('/api/history');
@@ -311,7 +306,6 @@
             }
         }
 
-        // 4. Fungsi "Akhiri Sesi & Simpan" (Menyimpan permanen ke Aiven & Reset Sesi)
         async function akhiriSesi() {
             if (confirm("Akhiri sesi untuk pasien ini? Hasil tiupan tertinggi akan disimpan secara permanen ke database, dan sesi akan direset untuk pasien baru.")) {
                 try {
@@ -329,16 +323,13 @@
                     });
 
                     if (res.ok) {
-                        // Reset variabel profil di frontend
                         profilAktif = { isSet: false, usia: 0, tb: 0, bb: 0, gender: '', targetNormal: 0 };
                         
-                        // Kosongkan form modal
                         document.getElementById('input-usia').value = '';
                         document.getElementById('input-tb').value = '';
                         document.getElementById('input-bb').value = '';
                         document.getElementById('input-gender').value = 'Pria';
 
-                        // Reset tampilan UI dashboard
                         document.getElementById('pressure-value').innerText = '0';
                         document.getElementById('medical-prediction').classList.add('hidden');
                         document.getElementById('patient-info-display').innerHTML = 'Belum ada pasien yang diatur. Klik tombol "Atur Pasien" di atas.';
@@ -363,7 +354,6 @@
             }
         }
 
-        // Jalankan polling data berkala setiap 2 detik
         fetchLatestData();
         setInterval(fetchLatestData, 2000);
     </script>
