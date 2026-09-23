@@ -15,132 +15,157 @@
         .modal-active { display: flex !important; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-teal-500 selection:text-white">
 
-    <!-- MODAL FORM PASIEN -->
+    <!-- MODAL FORM PROFIL PASIEN -->
     <div id="patient-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm">
         <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-11/12 max-w-md shadow-2xl transition-all">
-            <h2 class="text-xl font-bold text-cyan-400 mb-4 border-b border-slate-700 pb-2">Data Pasien Sesi Baru</h2>
+            <h2 class="text-xl font-bold text-teal-400 mb-2 border-b border-slate-700 pb-2">Data Pasien Sesi Baru</h2>
+            <p class="text-xs text-slate-400 mb-4">Masukkan data pasien untuk memulai pengujian dan kalkulasi target normal.</p>
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1">Usia (Tahun)</label>
-                    <input type="number" id="input-usia" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500" placeholder="Contoh: 22">
+                    <input type="number" id="input-usia" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500" placeholder="Contoh: 25">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1">Tinggi Badan (cm)</label>
-                    <input type="number" id="input-tb" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500" placeholder="Contoh: 170">
+                    <input type="number" id="input-tb" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500" placeholder="Contoh: 170">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1">Berat Badan (kg) - Opsional</label>
-                    <input type="number" id="input-bb" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500" placeholder="Contoh: 65">
+                    <input type="number" id="input-bb" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500" placeholder="Contoh: 60">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1">Jenis Kelamin</label>
-                    <select id="input-gender" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+                    <select id="input-gender" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500">
                         <option value="Pria">Pria</option>
                         <option value="Wanita">Wanita</option>
                     </select>
                 </div>
-                <button onclick="simpanProfilPasien()" class="w-full mt-4 bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-cyan-500/30">
+                <button onclick="simpanProfilPasien()" class="w-full mt-4 bg-teal-500 hover:bg-teal-600 text-slate-950 font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-teal-500/20">
                     Mulai Sesi Uji
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD -->
-    <div class="max-w-7xl mx-auto px-4 py-6 w-full flex-grow flex flex-col space-y-6">
+    <!-- Container Utama -->
+    <div class="max-w-7xl mx-auto px-4 py-6 w-full flex-grow">
         
         <!-- Header -->
-        <header class="flex flex-col md:flex-row justify-between items-center bg-slate-900/80 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-xl">
+        <header class="flex flex-col md:flex-row justify-between items-center bg-slate-900/80 backdrop-blur-md p-6 rounded-2xl border border-slate-800 mb-8 shadow-xl">
             <div class="mb-4 md:mb-0">
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">Smart Spirometry IoT</h1>
-                <p class="text-xs text-slate-400 mt-1">Sistem Pemantauan Fungsi Paru Real-Time</p>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">Smart Spirometry IoT</h1>
+                <p class="text-xs text-slate-400 mt-1">Sistem Pemantauan Fungsi Paru-Paru Real-Time</p>
             </div>
-            <div class="flex flex-wrap gap-3 justify-center">
-                <button onclick="bukaModal()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all">
-                    👤 Edit Pasien
+            <div class="flex items-center space-x-3">
+                <button onclick="bukaModal()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border border-teal-500/30 transition-all duration-200">
+                    👤 Atur Pasien
                 </button>
-                <!-- Tombol Reset Dihilangkan, Cukup Akhiri Sesi -->
-                <button onclick="akhiriSesi()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-all shadow-md">
+                <!-- Tombol Akhiri Sesi & Simpan (Satu Pintu untuk Simpan + Reset Layar) -->
+                <button onclick="akhiriSesi()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition-all duration-200 shadow-sm flex items-center gap-2">
                     🚪 Akhiri Sesi & Simpan
                 </button>
+                <div class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/50">
+                    <span class="relative flex h-2.5 w-2.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    <span class="text-xs font-medium text-emerald-400">Live Connected</span>
+                </div>
             </div>
         </header>
 
-        <!-- Grid -->
+        <!-- Grid Konten Utama -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- KIRI: Info Panel -->
-            <div class="flex flex-col space-y-6">
-                <!-- Card PEF -->
-                <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden flex-grow">
+            <!-- Kolom Kiri: Panel Status, Gauge, & Info Pasien -->
+            <div class="space-y-6">
+                <!-- Card Nilai Saat Ini -->
+                <div class="bg-slate-900/80 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
                     <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">Peak Flow (PEF)</h2>
                     <div class="flex items-baseline space-x-2 my-4">
                         <span id="pressure-value" class="text-6xl font-extrabold text-white tracking-tight">0</span>
-                        <span class="text-lg font-medium text-cyan-400">L/min</span>
-                    </div>
-                    
-                    <div id="medical-prediction" class="mb-4 text-xs font-medium text-slate-300 hidden">
-                        Target Normal (Knudson): <span id="target-value" class="font-bold text-cyan-400">0</span> L/min <br>
-                        Persentase Capaian: <span id="percentage-value" class="font-bold text-yellow-400">0%</span>
+                        <span class="text-lg font-medium text-teal-400">L/min</span>
                     </div>
 
-                    <div id="zone-badge" class="w-full text-center py-3.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-400 border border-slate-700 transition-all duration-300">
-                        Menunggu Data...
+                    <!-- Prediksi Medis / Target Normal -->
+                    <div id="medical-prediction" class="mb-4 text-xs font-medium text-slate-300 hidden bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                        Target Normal (Knudson): <span id="target-value" class="font-bold text-teal-400">0</span> L/min <br>
+                        Persentase Capaian: <span id="percentage-value" class="font-bold text-amber-400">0%</span>
+                    </div>
+                    
+                    <!-- Badge Status Zona -->
+                    <div id="zone-badge" class="w-full text-center py-3.5 rounded-xl font-bold text-sm tracking-wide bg-slate-800 text-slate-300 border border-slate-700 transition-all duration-300 shadow-inner">
+                        Menunggu Data Pengujian...
                     </div>
                 </div>
 
-                <!-- Card Pasien -->
-                <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-xl">
-                    <h3 class="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
+                <!-- Card Informasi Data Pasien Aktif -->
+                <div class="bg-slate-900/80 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-xl">
+                    <h3 class="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
                         <span>📋</span> Data Pasien Aktif
                     </h3>
                     <div id="patient-info-display" class="text-xs text-slate-400">
-                        Memulai sesi baru...
+                        Belum ada pasien yang diatur. Klik tombol "Atur Pasien" di atas.
                     </div>
                 </div>
             </div>
 
-            <!-- KANAN: Chart -->
-            <div class="lg:col-span-2 flex flex-col">
-                <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-xl flex-grow flex flex-col">
-                    <h3 class="text-sm font-semibold text-slate-300 mb-4">Grafik Aliran Napas</h3>
-                    <div class="flex-grow relative w-full min-h-[250px]">
+            <!-- Kolom Kanan: Grafik Real-Time & Tabel Riwayat -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Card Grafik Real-Time -->
+                <div class="bg-slate-900/80 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-semibold text-slate-300">Grafik Laju Aliran Napas (Live)</h3>
+                        <span class="text-xs text-teal-400 bg-teal-500/10 px-2.5 py-1 rounded-lg border border-teal-500/20">Real-time Chart</span>
+                    </div>
+                    <div class="h-64 w-full relative">
                         <canvas id="liveChart"></canvas>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Tabel Riwayat -->
-        <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-xl w-full">
-            <h3 class="text-sm font-semibold text-slate-300 mb-4">Riwayat Pengujian Sesi Ini</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs text-slate-300">
-                    <thead class="bg-slate-800/60 text-slate-400 uppercase border-b border-slate-700/50">
-                        <tr>
-                            <th class="py-3 px-4 rounded-l-xl">Waktu</th>
-                            <th class="py-3 px-4">Profil Pasien</th>
-                            <th class="py-3 px-4">Peak Flow</th>
-                            <th class="py-3 px-4">% Target</th>
-                            <th class="py-3 px-4 rounded-r-xl">Status Zona</th>
-                        </tr>
-                    </thead>
-                    <tbody id="history-table-body" class="divide-y divide-slate-800/50">
-                    </tbody>
-                </table>
+                <!-- Card Tabel Riwayat Pengujian (Dengan Kolom Profil Pasien) -->
+                <div class="bg-slate-900/80 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-xl">
+                    <h3 class="text-sm font-semibold text-slate-300 mb-4">Riwayat Pengujian Sesi Ini</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-800/60 text-slate-400 uppercase tracking-wider border-b border-slate-700/50">
+                                <tr>
+                                    <th class="py-3 px-4 rounded-l-xl">Waktu</th>
+                                    <th class="py-3 px-4">Profil Pasien</th>
+                                    <th class="py-3 px-4">Peak Flow</th>
+                                    <th class="py-3 px-4">% Target</th>
+                                    <th class="py-3 px-4 rounded-r-xl">Status Zona</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body" class="divide-y divide-slate-800/50">
+                                <!-- Data dimuat otomatis via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
         </div>
-        
     </div>
 
+    <!-- Footer -->
+    <footer class="w-full text-center py-6 text-xs text-slate-500 border-t border-slate-900 mt-12 bg-slate-950">
+        <p>&copy; 2026 Smart Spirometry IoT System. All rights reserved.</p>
+    </footer>
+
+    <!-- Script JavaScript -->
     <script>
         let profilAktif = { isSet: false, usia: 0, tb: 0, bb: 0, gender: '', targetNormal: 0 };
         const modal = document.getElementById('patient-modal');
         
         function bukaModal() { modal.classList.add('modal-active'); }
         function tutupModal() { modal.classList.remove('modal-active'); }
+        
+        // Munculkan modal otomatis saat halaman pertama dibuka
         window.onload = () => { bukaModal(); };
 
         function simpanProfilPasien() {
@@ -156,6 +181,7 @@
 
             profilAktif = { usia, tb, bb, gender, isSet: true };
 
+            // Kalkulasi Rumus Knudson Prediksi Normal
             let prediksi = (gender === "Pria") 
                 ? (0.06 * tb) - (0.022 * usia) - 4.21 
                 : (0.052 * tb) - (0.022 * usia) - 3.87;
@@ -163,11 +189,11 @@
             profilAktif.targetNormal = (prediksi * 100).toFixed(1); 
 
             document.getElementById('patient-info-display').innerHTML = `
-                <div class="grid grid-cols-2 gap-3 mt-2">
-                    <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-700/50">Usia: <strong class="text-white">${usia} Thn</strong></div>
-                    <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-700/50">Gender: <strong class="text-white">${gender}</strong></div>
-                    <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-700/50">Tinggi: <strong class="text-white">${tb} cm</strong></div>
-                    <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-700/50">Berat: <strong class="text-white">${bb ? bb+' kg' : '-'}</strong></div>
+                <div class="grid grid-cols-2 gap-2 mt-1">
+                    <div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700/50">Usia: <strong class="text-white">${usia} Thn</strong></div>
+                    <div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700/50">Gender: <strong class="text-white">${gender}</strong></div>
+                    <div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700/50">Tinggi: <strong class="text-white">${tb} cm</strong></div>
+                    <div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700/50">Berat: <strong class="text-white">${bb ? bb+' kg' : '-'}</strong></div>
                 </div>
             `;
             
@@ -176,28 +202,36 @@
             tutupModal();
         }
 
+        // 1. Inisialisasi Chart.js
         const ctx = document.getElementById('liveChart').getContext('2d');
         const liveChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: [],
                 datasets: [{
-                    label: 'Laju Aliran (L/min)',
+                    label: 'Aliran Napas (L/min)',
                     data: [],
-                    borderColor: '#22d3ee',
-                    backgroundColor: 'rgba(34, 211, 238, 0.08)',
-                    borderWidth: 2.5, fill: true, tension: 0.3, pointRadius: 3
+                    borderColor: '#2dd4bf',
+                    backgroundColor: 'rgba(45, 212, 191, 0.08)',
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#2dd4bf'
                 }]
             },
             options: {
-                responsive: true, maintainAspectRatio: false,
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
-                    x: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } },
-                    y: { min: 0, max: 1000, ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }
-                }
+                    x: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#1e293b' } },
+                    y: { min: 0, max: 1000, ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#1e293b' } }
+                },
+                plugins: { legend: { labels: { color: '#cbd5e1', font: { size: 11 } } } }
             }
         });
 
+        // 2. Fungsi Update Badge Zona & Persentase Capaian
         function updateUI(status, pressure) {
             document.getElementById('pressure-value').innerText = pressure;
             const badge = document.getElementById('zone-badge');
@@ -210,26 +244,27 @@
             }
 
             if (status === 'Zona Merah' || pressure < 500) {
-                badge.className = "w-full text-center py-3.5 rounded-xl font-bold text-sm bg-rose-500/15 text-rose-400 border border-rose-500/40 shadow-[0_0_15px_rgba(244,63,94,0.15)]";
+                badge.className = "w-full text-center py-3.5 rounded-xl font-bold text-sm tracking-wide bg-rose-500/15 text-rose-400 border border-rose-500/30 shadow-lg shadow-rose-500/5";
                 badge.innerText = "🔴 ZONA MERAH (Rendah)";
             } else if (status === 'Zona Kuning' || (pressure >= 500 && pressure < 800)) {
-                badge.className = "w-full text-center py-3.5 rounded-xl font-bold text-sm bg-amber-500/15 text-amber-400 border border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.15)]";
+                badge.className = "w-full text-center py-3.5 rounded-xl font-bold text-sm tracking-wide bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-lg shadow-amber-500/5";
                 badge.innerText = "🟡 ZONA KUNING (Sedang)";
             } else {
-                badge.className = "w-full text-center py-3.5 rounded-xl font-bold text-sm bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]";
+                badge.className = "w-full text-center py-3.5 rounded-xl font-bold text-sm tracking-wide bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-lg shadow-emerald-500/5";
                 badge.innerText = "🟢 ZONA HIJAU (Normal)";
             }
         }
 
+        // 3. Ambil Riwayat dari Backend API secara Berkala (Polling 2 Detik)
         async function fetchLatestData() {
             try {
                 const res = await fetch('/api/history');
                 const data = await res.json();
                 const tbody = document.getElementById('history-table-body');
                 tbody.innerHTML = '';
-
+                
                 if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-slate-500">Belum ada data di sesi ini.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-slate-500">Belum ada data pengujian di sesi ini.</td></tr>`;
                 }
 
                 let profilString = profilAktif.isSet 
@@ -237,27 +272,29 @@
                     : 'Belum diatur';
 
                 data.forEach(item => {
-                    const timeStr = new Date(item.created_at).toLocaleTimeString('id-ID');
-                    let bgStatus = item.zone_status === 'Zona Merah' ? 'bg-rose-500/15 text-rose-400 border border-rose-500/20' : 
-                                  (item.zone_status === 'Zona Kuning' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20');
+                    const row = document.createElement('tr');
+                    const dateFormatted = new Date(item.created_at).toLocaleTimeString('id-ID');
                     
+                    let badgeClass = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                    if(item.zone_status === 'Zona Merah') badgeClass = 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
+                    else if(item.zone_status === 'Zona Kuning') badgeClass = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+
                     let tblPct = profilAktif.isSet ? ((item.pressure / profilAktif.targetNormal) * 100).toFixed(0) + '%' : '-';
 
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-800/30 transition-colors">
-                            <td class="py-3 px-4 font-mono text-slate-400">${timeStr}</td>
-                            <td class="py-3 px-4 text-slate-300 text-[11px]">${profilString}</td>
-                            <td class="py-3 px-4 font-bold text-white">${item.pressure} L/min</td>
-                            <td class="py-3 px-4 text-cyan-300 font-semibold">${tblPct}</td>
-                            <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-lg text-xs font-semibold ${bgStatus}">${item.zone_status}</span></td>
-                        </tr>
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-mono text-slate-400">${dateFormatted}</td>
+                        <td class="py-3 px-4 text-slate-300 text-[11px]">${profilString}</td>
+                        <td class="py-3 px-4 font-bold text-white">${item.pressure} L/min</td>
+                        <td class="py-3 px-4 text-teal-300 font-semibold">${tblPct}</td>
+                        <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-lg text-xs font-semibold ${badgeClass}">${item.zone_status}</span></td>
                     `;
+                    tbody.appendChild(row);
                 });
 
                 if (data.length > 0) {
                     const latest = data[0];
                     updateUI(latest.zone_status, latest.pressure);
-                    
+
                     const timeLabel = new Date(latest.created_at).toLocaleTimeString('id-ID');
                     if (liveChart.data.labels.length === 0 || liveChart.data.labels[liveChart.data.labels.length - 1] !== timeLabel) {
                         if (liveChart.data.labels.length > 15) {
@@ -269,12 +306,14 @@
                         liveChart.update();
                     }
                 }
-            } catch (err) { console.error(err); }
+            } catch (err) {
+                console.error("Gagal mengambil data terbaru:", err);
+            }
         }
 
-        // FUNGSI SATU PINTU: Mengakhiri Sesi, Menyimpan, dan Mereset
+        // 4. Fungsi "Akhiri Sesi & Simpan" (Menyimpan permanen ke Aiven & Reset Sesi)
         async function akhiriSesi() {
-            if (confirm("Akhiri sesi saat ini? Data tiupan tertinggi pasien akan disimpan permanen ke database, kemudian riwayat akan dikosongkan.")) {
+            if (confirm("Akhiri sesi untuk pasien ini? Hasil tiupan tertinggi akan disimpan secara permanen ke database, dan sesi akan direset untuk pasien baru.")) {
                 try {
                     const payload = {
                         usia: profilAktif.usia,
@@ -290,43 +329,42 @@
                     });
 
                     if (res.ok) {
-                        // Reset Variabel Frontend
+                        // Reset variabel profil di frontend
                         profilAktif = { isSet: false, usia: 0, tb: 0, bb: 0, gender: '', targetNormal: 0 };
                         
-                        // Kosongkan Modal Form
+                        // Kosongkan form modal
                         document.getElementById('input-usia').value = '';
                         document.getElementById('input-tb').value = '';
                         document.getElementById('input-bb').value = '';
                         document.getElementById('input-gender').value = 'Pria';
 
-                        // Kosongkan Tampilan Layar Utama
+                        // Reset tampilan UI dashboard
                         document.getElementById('pressure-value').innerText = '0';
                         document.getElementById('medical-prediction').classList.add('hidden');
-                        document.getElementById('patient-info-display').innerHTML = 'Memulai sesi baru...';
+                        document.getElementById('patient-info-display').innerHTML = 'Belum ada pasien yang diatur. Klik tombol "Atur Pasien" di atas.';
                         document.getElementById('history-table-body').innerHTML = '';
                         
-                        // Reset Badge Zona
                         const badge = document.getElementById('zone-badge');
-                        badge.className = "w-full text-center py-3.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-400 border border-slate-700 transition-all duration-300";
-                        badge.innerText = "Menunggu Data...";
+                        badge.className = "w-full text-center py-3.5 rounded-xl font-bold text-sm tracking-wide bg-slate-800 text-slate-300 border border-slate-700 transition-all duration-300 shadow-inner";
+                        badge.innerText = "Menunggu Data Pengujian...";
                         
-                        // Reset Grafik
                         liveChart.data.labels = []; 
                         liveChart.data.datasets[0].data = []; 
                         liveChart.update();
 
-                        alert("Sesi pasien berhasil disimpan dan layar telah direset!");
+                        alert("Sesi berhasil disimpan ke Database Aiven dan layar telah direset!");
                         bukaModal();
                     } else {
-                        alert("Gagal menyimpan sesi. Pastikan server backend berjalan.");
+                        alert("Gagal menyimpan sesi ke server.");
                     }
-                } catch (e) { 
-                    alert("Error saat mengakhiri sesi. Periksa koneksi."); 
+                } catch (e) {
+                    alert("Terjadi kesalahan koneksi jaringan.");
                 }
             }
         }
 
-        // Jalankan fetch polling setiap 2 detik[cite: 1, 2, 4]
+        // Jalankan polling data berkala setiap 2 detik
+        fetchLatestData();
         setInterval(fetchLatestData, 2000);
     </script>
 </body>
