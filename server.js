@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Menggunakan createPool agar koneksi otomatis dikelola di Serverless Vercel
+// Koneksi Database Aiven Cloud menggunakan Pool
 const db = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
@@ -26,7 +26,7 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
-// Otomatisasi Pembuatan Tabel Database Aiven Cloud
+// Pembuatan Tabel Otomatis
 function createTablesAutomatically() {
     const createPatients = `
         CREATE TABLE IF NOT EXISTS patients (
@@ -59,35 +59,32 @@ function createTablesAutomatically() {
 }
 createTablesAutomatically();
 
-// Endpoint Menerima Data Real-Time dari ESP8266 (Sesi Sementara: patient_id = 1)
+// Endpoint Menerima Data dari ESP8266 (Data Sementara Sesi Saat Ini)
 app.post('/api/data', (req, res) => {
     const { device_id, pressure, status } = req.body;
     const query = 'INSERT INTO test_logs (patient_id, device_id, pressure, zone_status) VALUES (1, ?, ?, ?)';
     
     db.query(query, [device_id || 'SPIRO-01', pressure || 0, status || 'Zona Merah'], (err, result) => {
-        if (err) {
-            console.error("Database Insert Error:", err);
-            return res.status(500).json({ error: err.message });
-        }
+        if (err) return res.status(500).json({ error: err.message });
         io.emit('newData', { pressure, status, created_at: new Date() });
-        res.json({ message: 'Data sukses disimpan!' });
+        res.json({ message: 'Data sesi tersimpan!' });
     });
 });
 
-// Endpoint Mengambil Riwayat Tes Sesi Saat Ini
+// Endpoint Mengambil Riwayat Sesi Saat Ini
 app.get('/api/history', (req, res) => {
-    const query = 'SELECT * FROM test_logs WHERE patient_id = 1 ORDER BY created_at DESC LIMIT 10';
+    const query = 'SELECT * FROM test_logs WHERE patient_id = 1 ORDER BY created_at DESC LIMIT 15';
     db.query(query, (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results);
     });
 });
 
-// ENDPOINT BARU: Simpan Sesi & Kemas Data
+// ENDPOINT BARU: Akhiri Sesi & Kemas Data Permanen
 app.post('/api/save-session', (req, res) => {
     const { usia, tb, bb, gender } = req.body;
     
-    // Cari tiupan tertinggi di sesi saat ini
+    // 1. Cari tiupan tertinggi (Peak Flow) di sesi ini
     db.query('SELECT pressure, zone_status FROM test_logs WHERE patient_id = 1 ORDER BY pressure DESC LIMIT 1', (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         
@@ -99,21 +96,21 @@ app.post('/api/save-session', (req, res) => {
             finalZone = results[0].zone_status;
         }
 
-        // Simpan data profil ke tabel patients
+        // 2. Simpan profil pasien baru
         const queryPatient = 'INSERT INTO patients (name, age, gender, height_cm) VALUES (?, ?, ?, ?)';
         const genderEnum = gender === 'Wanita' ? 'P' : 'L';
-        const namaPasien = 'Pasien ' + new Date().toLocaleString('id-ID'); 
+        const namaPasien = 'Pasien Sesi ' + new Date().toLocaleTimeString('id-ID'); 
         
         db.query(queryPatient, [namaPasien, usia || 0, genderEnum, tb || 0], (err, patientRes) => {
             if (err) return res.status(500).json({ error: err.message });
             const newPatientId = patientRes.insertId;
 
-            // Simpan riwayat terbaik dengan ID pasien baru secara permanen
+            // 3. Simpan rekam medis permanen
             const queryLog = 'INSERT INTO test_logs (patient_id, device_id, pressure, zone_status) VALUES (?, ?, ?, ?)';
             db.query(queryLog, [newPatientId, 'SPIRO-SAVED', bestPressure, finalZone], (err) => {
                 if (err) return res.status(500).json({ error: err.message });
                 
-                // Bersihkan data sementara (patient_id = 1) untuk siap menerima pasien selanjutnya
+                // 4. Kosongkan data sementara untuk pasien berikutnya
                 db.query('DELETE FROM test_logs WHERE patient_id = 1', (err) => {
                     if (err) return res.status(500).json({ error: err.message });
                     res.json({ message: 'Sesi berhasil dikemas dan disimpan permanen!' });
@@ -123,7 +120,7 @@ app.post('/api/save-session', (req, res) => {
     });
 });
 
-// Endpoint Reset Data Manual
+// Endpoint Reset Data Manual Sesi Ini
 app.delete('/api/reset', (req, res) => {
     db.query('DELETE FROM test_logs WHERE patient_id = 1', (err) => {
         if (err) return res.status(500).json({ error: err.message });
